@@ -31,9 +31,9 @@ export function Sidebar() {
           <div className="w-8 h-8 bg-green-500 rounded-lg flex items-center justify-center">
             <Zap className="w-5 h-5 text-white" />
           </div>
-          <span className="text-xl font-bold text-gray-900">AgendaZap</span>
+          <span className="text-xl font-bold text-gray-900">Availa.ai</span>
         </div>
-        <p className="text-xs text-gray-500 mt-1">Agendamentos via WhatsApp</p>
+        <p className="text-xs text-gray-500 mt-1">Agendamentos inteligentes</p>
       </div>
 
       {/* Navigation */}
