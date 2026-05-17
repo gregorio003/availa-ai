@@ -1,7 +1,7 @@
 'use client'
 
-import { useState } from 'react'
-import { MessageCircle, Clock, CheckCircle, XCircle } from 'lucide-react'
+import { useState, useRef, useEffect } from 'react'
+import { MessageCircle, Clock, CheckCircle, XCircle, Bot, User, Send, AlertCircle } from 'lucide-react'
 import { cn } from '@/lib/utils/cn'
 
 const mockConversations = [
@@ -63,12 +63,39 @@ const statusConfig = {
 
 export default function ConversasPage() {
   const [selectedId, setSelectedId] = useState(mockConversations[0].id)
+  const [manualMode, setManualMode] = useState<Record<string, boolean>>({})
+  const [messages, setMessages] = useState<Record<string, typeof mockConversations[0]['messages']>>(
+    Object.fromEntries(mockConversations.map(c => [c.id, c.messages]))
+  )
+  const [input, setInput] = useState('')
+  const messagesEndRef = useRef<HTMLDivElement>(null)
+
   const selected = mockConversations.find(c => c.id === selectedId)!
+  const isManual = manualMode[selectedId] ?? false
+  const currentMessages = messages[selectedId] ?? []
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }, [selectedId, currentMessages])
+
+  const toggleManualMode = () => {
+    setManualMode(prev => ({ ...prev, [selectedId]: !isManual }))
+  }
+
+  const sendMessage = () => {
+    if (!input.trim()) return
+    const now = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
+    setMessages(prev => ({
+      ...prev,
+      [selectedId]: [...(prev[selectedId] ?? []), { role: 'owner', content: input.trim(), time: now }]
+    }))
+    setInput('')
+  }
 
   return (
     <div className="h-full flex">
       {/* Conversation list */}
-      <div className="w-80 border-r border-gray-200 bg-white flex flex-col">
+      <div className="w-80 border-r border-gray-200 bg-white flex flex-col shrink-0">
         <div className="p-4 border-b border-gray-200">
           <h1 className="text-lg font-bold text-gray-900">Conversas</h1>
         </div>
@@ -100,6 +127,11 @@ export default function ConversasPage() {
                       <span className={cn('text-xs font-medium px-1.5 py-0.5 rounded-full', status.color)}>
                         {status.label}
                       </span>
+                      {manualMode[conv.id] && (
+                        <span className="text-xs font-medium px-1.5 py-0.5 rounded-full text-orange-600 bg-orange-50">
+                          Manual
+                        </span>
+                      )}
                       {conv.unread > 0 && (
                         <span className="ml-auto text-xs bg-green-500 text-white rounded-full w-4 h-4 flex items-center justify-center font-bold">
                           {conv.unread}
@@ -115,21 +147,52 @@ export default function ConversasPage() {
       </div>
 
       {/* Chat view */}
-      <div className="flex-1 flex flex-col bg-gray-50">
+      <div className="flex-1 flex flex-col bg-gray-50 min-w-0">
         {/* Chat header */}
         <div className="bg-white border-b border-gray-200 p-4 flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center text-sm font-bold text-green-700">
+          <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center text-sm font-bold text-green-700 shrink-0">
             {selected.customer[0]}
           </div>
-          <div>
+          <div className="flex-1 min-w-0">
             <p className="font-semibold text-gray-900">{selected.customer}</p>
             <p className="text-sm text-gray-500">{selected.phone}</p>
           </div>
+          <button
+            onClick={toggleManualMode}
+            className={cn(
+              'flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors',
+              isManual
+                ? 'bg-orange-100 text-orange-700 hover:bg-orange-200'
+                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+            )}
+          >
+            {isManual ? (
+              <>
+                <Bot className="w-4 h-4" />
+                Voltar ao Bot
+              </>
+            ) : (
+              <>
+                <User className="w-4 h-4" />
+                Assumir conversa
+              </>
+            )}
+          </button>
         </div>
+
+        {/* Manual mode banner */}
+        {isManual && (
+          <div className="bg-orange-50 border-b border-orange-200 px-4 py-2 flex items-center gap-2">
+            <AlertCircle className="w-4 h-4 text-orange-500 shrink-0" />
+            <p className="text-sm text-orange-700">
+              <span className="font-semibold">Modo manual ativo</span> — O bot está pausado. Você está respondendo diretamente.
+            </p>
+          </div>
+        )}
 
         {/* Messages */}
         <div className="flex-1 overflow-auto p-4 space-y-3">
-          {selected.messages.map((msg, i) => (
+          {currentMessages.map((msg, i) => (
             <div
               key={i}
               className={cn(
@@ -137,33 +200,70 @@ export default function ConversasPage() {
                 msg.role === 'customer' ? 'justify-start' : 'justify-end'
               )}
             >
+              {msg.role !== 'customer' && (
+                <div className="mr-2 flex flex-col items-end justify-end mb-1">
+                  {msg.role === 'owner' ? (
+                    <span className="text-xs text-orange-500 font-medium mb-1">Você</span>
+                  ) : (
+                    <Bot className="w-3.5 h-3.5 text-green-400 mb-1" />
+                  )}
+                </div>
+              )}
               <div
                 className={cn(
                   'max-w-xs lg:max-w-md px-4 py-2.5 rounded-2xl text-sm whitespace-pre-line',
                   msg.role === 'customer'
                     ? 'bg-white text-gray-900 rounded-tl-sm shadow-sm'
+                    : msg.role === 'owner'
+                    ? 'bg-orange-500 text-white rounded-tr-sm'
                     : 'bg-green-600 text-white rounded-tr-sm'
                 )}
               >
                 <p>{msg.content}</p>
                 <p className={cn(
                   'text-xs mt-1 text-right',
-                  msg.role === 'customer' ? 'text-gray-400' : 'text-green-200'
+                  msg.role === 'customer' ? 'text-gray-400' : 'text-white/70'
                 )}>
                   {msg.time}
                 </p>
               </div>
             </div>
           ))}
+          <div ref={messagesEndRef} />
         </div>
 
-        {/* Info bar */}
-        <div className="bg-white border-t border-gray-200 p-3">
-          <div className="flex items-center gap-2 text-xs text-gray-500">
-            <MessageCircle className="w-4 h-4 text-green-500" />
-            <span>Gerenciado automaticamente pelo agente de IA</span>
+        {/* Input or info bar */}
+        {isManual ? (
+          <div className="bg-white border-t border-gray-200 p-3 flex items-end gap-2">
+            <textarea
+              value={input}
+              onChange={e => setInput(e.target.value)}
+              onKeyDown={e => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                  e.preventDefault()
+                  sendMessage()
+                }
+              }}
+              placeholder="Digite sua mensagem..."
+              rows={1}
+              className="flex-1 px-3 py-2 border border-gray-200 rounded-xl text-sm resize-none focus:outline-none focus:ring-2 focus:ring-orange-400"
+            />
+            <button
+              onClick={sendMessage}
+              disabled={!input.trim()}
+              className="p-2.5 bg-orange-500 hover:bg-orange-600 disabled:bg-gray-200 text-white rounded-xl transition-colors"
+            >
+              <Send className="w-4 h-4" />
+            </button>
           </div>
-        </div>
+        ) : (
+          <div className="bg-white border-t border-gray-200 p-3">
+            <div className="flex items-center gap-2 text-xs text-gray-500">
+              <Bot className="w-4 h-4 text-green-500" />
+              <span>Gerenciado automaticamente pelo agente de IA</span>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   )
