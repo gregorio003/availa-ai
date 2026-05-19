@@ -48,6 +48,7 @@ export async function POST(request: NextRequest) {
           customerName,
           text,
           whatsappMessageId: message.id,
+          replyPhoneNumberId: phoneNumberId,
         })
       }
     }
@@ -62,12 +63,14 @@ async function handleIncomingMessage({
   customerName,
   text,
   whatsappMessageId,
+  replyPhoneNumberId,
 }: {
   businessPhoneNumberId: string
   customerPhone: string
   customerName: string | null
   text: string
   whatsappMessageId: string
+  replyPhoneNumberId: string
 }) {
   const supabase = createServiceClient()
 
@@ -176,6 +179,6 @@ async function handleIncomingMessage({
     })
   }
 
-  // Send reply via WhatsApp
-  await sendWhatsAppMessage(customerPhone, reply)
+  // Send reply via WhatsApp (use same phone number ID that received the message)
+  await sendWhatsAppMessage(customerPhone, reply, replyPhoneNumberId)
 }

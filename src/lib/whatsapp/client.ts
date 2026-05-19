@@ -1,11 +1,11 @@
 const WHATSAPP_API_URL = 'https://graph.facebook.com/v19.0'
 
-export async function sendWhatsAppMessage(to: string, message: string): Promise<void> {
-  const phoneNumberId = process.env.WHATSAPP_PHONE_NUMBER_ID
+export async function sendWhatsAppMessage(to: string, message: string, phoneNumberId?: string): Promise<void> {
+  const resolvedPhoneNumberId = phoneNumberId ?? process.env.WHATSAPP_PHONE_NUMBER_ID
   const accessToken = process.env.WHATSAPP_ACCESS_TOKEN
 
   const response = await fetch(
-    `${WHATSAPP_API_URL}/${phoneNumberId}/messages`,
+    `${WHATSAPP_API_URL}/${resolvedPhoneNumberId}/messages`,
     {
       method: 'POST',
       headers: {
