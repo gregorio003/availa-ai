@@ -90,9 +90,14 @@ export default function LandingPage() {
             <Link href="/login" className="text-sm text-gray-600 hover:text-gray-900 font-medium">
               Entrar
             </Link>
-            <Link href="/login" className="bg-green-600 hover:bg-green-700 text-white text-sm font-semibold px-4 py-2 rounded-lg transition">
+            <a
+              href="https://wa.me/5537999181248?text=Ol%C3%A1!%20Quero%20conhecer%20a%20Availa.ai"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="bg-green-600 hover:bg-green-700 text-white text-sm font-semibold px-4 py-2 rounded-lg transition"
+            >
               Começar grátis
-            </Link>
+            </a>
           </div>
         </div>
       </nav>
@@ -113,13 +118,15 @@ export default function LandingPage() {
           Sem você parar o trabalho para responder mensagem.
         </p>
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-          <Link
-            href="/login"
+          <a
+            href="https://wa.me/5537999181248?text=Ol%C3%A1!%20Quero%20conhecer%20a%20Availa.ai"
+            target="_blank"
+            rel="noopener noreferrer"
             className="bg-green-600 hover:bg-green-700 text-white font-semibold px-8 py-3.5 rounded-xl transition flex items-center gap-2 text-lg"
           >
             Começar grátis
             <ArrowRight className="w-5 h-5" />
-          </Link>
+          </a>
           <a href="#como-funciona" className="text-gray-600 hover:text-gray-900 font-medium flex items-center gap-2">
             Ver como funciona
           </a>
@@ -211,48 +218,6 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Pricing */}
-      <section id="precos" className="max-w-6xl mx-auto px-6 py-24">
-        <div className="text-center mb-16">
-          <h2 className="text-4xl font-bold text-gray-900 mb-4">Planos simples</h2>
-          <p className="text-gray-500 text-lg">Sem taxa de setup. Cancele quando quiser.</p>
-        </div>
-        <div className="grid md:grid-cols-3 gap-8">
-          {plans.map((plan, i) => (
-            <div key={i} className={`rounded-2xl p-8 border-2 ${plan.highlight ? 'border-green-500 bg-green-50' : 'border-gray-100 bg-white'}`}>
-              {plan.highlight && (
-                <span className="bg-green-500 text-white text-xs font-bold px-3 py-1 rounded-full mb-4 inline-block">
-                  MAIS POPULAR
-                </span>
-              )}
-              <h3 className="font-bold text-gray-900 text-lg mb-1">{plan.name}</h3>
-              <p className="text-gray-500 text-sm mb-4">{plan.description}</p>
-              <div className="flex items-baseline gap-1 mb-6">
-                <span className="text-4xl font-bold text-gray-900">{plan.price}</span>
-                <span className="text-gray-500">{plan.period}</span>
-              </div>
-              <ul className="space-y-3 mb-8">
-                {plan.features.map((f, j) => (
-                  <li key={j} className="flex items-center gap-2 text-sm text-gray-700">
-                    <CheckCircle className="w-4 h-4 text-green-500 shrink-0" />
-                    {f}
-                  </li>
-                ))}
-              </ul>
-              <Link
-                href="/login"
-                className={`w-full block text-center py-3 rounded-xl font-semibold transition ${
-                  plan.highlight
-                    ? 'bg-green-600 hover:bg-green-700 text-white'
-                    : 'bg-gray-100 hover:bg-gray-200 text-gray-800'
-                }`}
-              >
-                {plan.cta}
-              </Link>
-            </div>
-          ))}
-        </div>
-      </section>
 
       {/* CTA */}
       <section className="bg-green-600 py-20">
@@ -263,13 +228,15 @@ export default function LandingPage() {
           <p className="text-green-100 text-lg mb-8">
             Configure em 10 minutos. Primeiro mês grátis. Sem cartão de crédito.
           </p>
-          <Link
-            href="/login"
+          <a
+            href="https://wa.me/5537999181248?text=Ol%C3%A1!%20Quero%20conhecer%20a%20Availa.ai"
+            target="_blank"
+            rel="noopener noreferrer"
             className="bg-white text-green-700 hover:bg-green-50 font-bold px-8 py-4 rounded-xl text-lg transition inline-flex items-center gap-2"
           >
             Começar agora grátis
             <ArrowRight className="w-5 h-5" />
-          </Link>
+          </a>
         </div>
       </section>
 
