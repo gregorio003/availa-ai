@@ -225,7 +225,7 @@ export default function LandingPage() {
             Pronto para automatizar seus agendamentos?
           </h2>
           <p className="text-green-100 text-lg mb-8">
-            Configure em 10 minutos. Primeiro mês grátis. Sem cartão de crédito.
+            Configure em 10 minutos e comece a atender clientes automaticamente hoje mesmo. Fale com a gente e descubra como.
           </p>
           <a
             href="https://wa.me/5537999181248?text=Ol%C3%A1!%20Quero%20conhecer%20a%20Availa.ai"
