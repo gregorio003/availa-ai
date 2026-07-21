@@ -19,15 +19,23 @@ export default function LoginPage() {
     setError('')
 
     const supabase = createClient()
-    const { error } = await supabase.auth.signInWithPassword({ email, password })
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password })
 
-    if (error) {
+    if (error || !data.user) {
       setError('E-mail ou senha incorretos.')
       setLoading(false)
       return
     }
 
-    router.push('/dashboard')
+    // Redireciona conforme o papel
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', data.user.id)
+      .single()
+
+    router.push(profile?.role === 'super_admin' ? '/admin' : '/dashboard')
+    router.refresh()
   }
 
   return (

@@ -1,23 +1,61 @@
+export type UserRole = 'super_admin' | 'client'
+
 export type Niche = 'lavajato' | 'sobrancelha' | 'salao' | 'unhas'
 
 export type AppointmentStatus = 'confirmed' | 'cancelled' | 'completed' | 'no_show'
 
 export type ConversationStatus = 'active' | 'completed' | 'abandoned'
 
-export type MessageRole = 'customer' | 'assistant'
+export type MessageRole = 'customer' | 'assistant' | 'owner'
+
+export interface Profile {
+  id: string
+  role: UserRole
+  full_name: string | null
+  created_at: string
+}
 
 export interface Business {
   id: string
+  owner_user_id: string | null
   name: string
-  phone: string
+  phone: string | null
   niche: Niche
   address: string | null
   google_calendar_id: string | null
   google_refresh_token: string | null
   working_hours: WorkingHours
   slot_duration_minutes: number
+  // Regras de capacidade
+  employee_count: number
+  max_appointments_per_hour: number
+  // Adiantamento / sinal
+  requires_advance: boolean
+  advance_amount: number | null
+  // Assinatura
+  plan: string
+  commission_pct: number
+  subscription_status: string
+  subscription_valid_until: string | null
+  // WhatsApp (Z-API / Evolution por estabelecimento)
+  zapi_instance_id: string | null
+  zapi_token: string | null
+  whatsapp_connected: boolean
   active: boolean
   created_at: string
+}
+
+export interface BotMessages {
+  id: string
+  business_id: string
+  greeting: string
+  service_prompt: string
+  date_prompt: string
+  time_prompt: string
+  confirmation: string
+  advance_message: string
+  created_at: string
+  updated_at: string
 }
 
 export interface WorkingHours {
