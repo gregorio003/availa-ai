@@ -13,7 +13,7 @@ async function requireSuperAdmin() {
   return { user }
 }
 
-// Ativa/desativa o acesso de um estabelecimento. `id` = business.id
+// Edita um estabelecimento (e opcionalmente dados do dono). `id` = business.id
 export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const auth = await requireSuperAdmin()
   if ('error' in auth) return NextResponse.json({ error: auth.error }, { status: auth.status })
@@ -22,14 +22,57 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
   const body = await request.json()
   const service = createServiceClient()
 
-  const allowed: Record<string, unknown> = {}
-  if (typeof body.active === 'boolean') allowed.active = body.active
-  if (typeof body.commission_pct === 'number') allowed.commission_pct = body.commission_pct
-  if (typeof body.subscription_valid_until === 'string' || body.subscription_valid_until === null)
-    allowed.subscription_valid_until = body.subscription_valid_until
+  // Campos do negócio que podem ser editados
+  const businessFields = [
+    'name', 'niche', 'address', 'phone', 'plan', 'commission_pct',
+    'subscription_status', 'subscription_valid_until', 'employee_count',
+    'max_appointments_per_hour', 'requires_advance', 'advance_amount', 'active',
+  ]
+  const updates: Record<string, unknown> = {}
+  for (const f of businessFields) {
+    if (f in body) updates[f] = body[f]
+  }
 
-  const { error } = await service.from('businesses').update(allowed).eq('id', id)
-  if (error) return NextResponse.json({ error: error.message }, { status: 400 })
+  if (Object.keys(updates).length > 0) {
+    const { error } = await service.from('businesses').update(updates).eq('id', id)
+    if (error) return NextResponse.json({ error: error.message }, { status: 400 })
+  }
+
+  // Buscar o dono para atualizar nome/email se enviados
+  const { data: business } = await service.from('businesses').select('owner_user_id').eq('id', id).single()
+  const ownerId = business?.owner_user_id as string | null
+
+  if (ownerId) {
+    if (typeof body.full_name === 'string') {
+      await service.from('profiles').update({ full_name: body.full_name }).eq('id', ownerId)
+    }
+    if (typeof body.email === 'string' && body.email) {
+      const { error: emailErr } = await service.auth.admin.updateUserById(ownerId, { email: body.email })
+      if (emailErr) return NextResponse.json({ error: `E-mail: ${emailErr.message}` }, { status: 400 })
+    }
+  }
+
+  return NextResponse.json({ ok: true })
+}
+
+// Remove o cliente por completo (negócio + usuário)
+export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const auth = await requireSuperAdmin()
+  if ('error' in auth) return NextResponse.json({ error: auth.error }, { status: auth.status })
+
+  const { id } = await params
+  const service = createServiceClient()
+
+  const { data: business } = await service.from('businesses').select('owner_user_id').eq('id', id).single()
+  const ownerId = business?.owner_user_id as string | null
+
+  // Apaga o negócio (cascata: serviços, conversas, mensagens, agendamentos, bot_messages)
+  await service.from('businesses').delete().eq('id', id)
+
+  // Apaga o usuário do dono (cascata: profile)
+  if (ownerId) {
+    await service.auth.admin.deleteUser(ownerId)
+  }
 
   return NextResponse.json({ ok: true })
 }

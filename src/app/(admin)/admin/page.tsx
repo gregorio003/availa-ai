@@ -47,9 +47,10 @@ export default async function AdminPage() {
 
       <div className="space-y-3">
         {list.map((b) => (
-          <div
+          <Link
             key={b.id}
-            className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-5 flex items-center justify-between gap-4 shadow-sm"
+            href={`/admin/${b.id}`}
+            className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-5 flex items-center justify-between gap-4 shadow-sm hover:border-green-400 dark:hover:border-green-700 transition cursor-pointer"
           >
             <div className="min-w-0">
               <p className="text-gray-900 dark:text-white font-semibold truncate">{b.name}</p>
@@ -82,7 +83,7 @@ export default async function AdminPage() {
                 {b.active ? 'Ativo' : 'Inativo'}
               </span>
             </div>
-          </div>
+          </Link>
         ))}
 
         {list.length === 0 && (
