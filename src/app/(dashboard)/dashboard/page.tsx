@@ -1,140 +1,79 @@
-import { Calendar, Users, MessageCircle, TrendingUp, Clock, CheckCircle } from 'lucide-react'
-import { StatsCard } from '@/components/dashboard/StatsCard'
-import { format } from 'date-fns'
-import { ptBR } from 'date-fns/locale'
+import Link from 'next/link'
+import { redirect } from 'next/navigation'
+import { Calendar, MessageCircle, Users, Wrench, MessageSquareWarning, ArrowRight } from 'lucide-react'
+import { getCurrentUserAndBusiness } from '@/lib/auth/business'
 
-// Mock data — will be replaced with Supabase queries
-const mockAppointments = [
-  { id: '1', customer: 'Carlos Silva', service: 'Lavagem Completa', time: '09:00', status: 'confirmed' },
-  { id: '2', customer: 'Maria Oliveira', service: 'Lavagem Simples', time: '10:00', status: 'confirmed' },
-  { id: '3', customer: 'João Pereira', service: 'Polimento', time: '11:00', status: 'confirmed' },
-  { id: '4', customer: 'Ana Costa', service: 'Higienização Interna', time: '14:00', status: 'confirmed' },
-  { id: '5', customer: 'Pedro Santos', service: 'Lavagem Completa', time: '15:30', status: 'confirmed' },
-]
+export const dynamic = 'force-dynamic'
 
-const statusColors: Record<string, string> = {
-  confirmed: 'bg-green-100 text-green-700',
-  cancelled: 'bg-red-100 text-red-700',
-  completed: 'bg-blue-100 text-blue-700',
-  no_show: 'bg-gray-100 text-gray-600',
-}
+export default async function DashboardPage() {
+  const { user, business, supabase } = await getCurrentUserAndBusiness()
+  if (!user) redirect('/login')
+  if (!business) redirect('/login')
 
-const statusLabels: Record<string, string> = {
-  confirmed: 'Confirmado',
-  cancelled: 'Cancelado',
-  completed: 'Concluído',
-  no_show: 'Não compareceu',
-}
+  const todayStart = new Date()
+  todayStart.setHours(0, 0, 0, 0)
+  const todayEnd = new Date()
+  todayEnd.setHours(23, 59, 59, 999)
 
-export default function DashboardPage() {
-  const today = format(new Date(), "EEEE, dd 'de' MMMM", { locale: ptBR })
+  const [servicesCount, customersCount, apptToday, activeConvs] = await Promise.all([
+    supabase.from('services').select('*', { count: 'exact', head: true }).eq('business_id', business.id).eq('active', true),
+    supabase.from('customers').select('*', { count: 'exact', head: true }).eq('business_id', business.id),
+    supabase
+      .from('appointments')
+      .select('*', { count: 'exact', head: true })
+      .eq('business_id', business.id)
+      .gte('scheduled_at', todayStart.toISOString())
+      .lte('scheduled_at', todayEnd.toISOString()),
+    supabase.from('conversations').select('*', { count: 'exact', head: true }).eq('business_id', business.id).eq('status', 'active'),
+  ])
+
+  const stats = [
+    { label: 'Agendamentos hoje', value: apptToday.count ?? 0, icon: Calendar, href: '/agenda' },
+    { label: 'Conversas ativas', value: activeConvs.count ?? 0, icon: MessageCircle, href: '/conversas' },
+    { label: 'Clientes', value: customersCount.count ?? 0, icon: Users, href: '/clientes' },
+    { label: 'Serviços ativos', value: servicesCount.count ?? 0, icon: Wrench, href: '/servicos' },
+  ]
 
   return (
-    <div className="p-8">
-      {/* Header */}
+    <div className="p-8 max-w-5xl">
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
-        <p className="text-gray-500 mt-1 capitalize">{today}</p>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Olá, {business.name} 👋</h1>
+        <p className="text-gray-500 text-sm mt-1">Aqui está o resumo do seu atendimento automático.</p>
       </div>
+
+      {/* Aviso de WhatsApp desconectado */}
+      {!business.whatsapp_connected && (
+        <div className="mb-8 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900 rounded-xl p-5 flex items-start gap-3">
+          <MessageSquareWarning className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
+          <div className="flex-1">
+            <p className="font-semibold text-amber-800 dark:text-amber-200 text-sm">WhatsApp ainda não conectado</p>
+            <p className="text-amber-700 dark:text-amber-300/80 text-sm mt-0.5">
+              Assim que o WhatsApp for conectado, o bot começa a responder e agendar automaticamente. Enquanto isso, cadastre seus serviços e personalize as mensagens.
+            </p>
+            <Link href="/servicos" className="inline-flex items-center gap-1 text-amber-800 dark:text-amber-200 text-sm font-medium mt-2 hover:underline">
+              Cadastrar serviços <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
+          </div>
+        </div>
+      )}
 
       {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <StatsCard
-          title="Agendamentos hoje"
-          value={5}
-          subtitle="2 concluídos"
-          icon={<Calendar className="w-5 h-5" />}
-          color="green"
-        />
-        <StatsCard
-          title="Clientes ativos"
-          value={48}
-          subtitle="+3 esta semana"
-          icon={<Users className="w-5 h-5" />}
-          color="blue"
-        />
-        <StatsCard
-          title="Conversas ativas"
-          value={3}
-          subtitle="Aguardando resposta"
-          icon={<MessageCircle className="w-5 h-5" />}
-          color="purple"
-        />
-        <StatsCard
-          title="Receita do mês"
-          value="R$ 2.840"
-          subtitle="Meta: R$ 4.000"
-          icon={<TrendingUp className="w-5 h-5" />}
-          color="orange"
-        />
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Today's appointments */}
-        <div className="lg:col-span-2 bg-white rounded-xl border border-gray-200">
-          <div className="p-6 border-b border-gray-100">
-            <h2 className="text-lg font-semibold text-gray-900">Agenda de Hoje</h2>
-          </div>
-          <div className="divide-y divide-gray-50">
-            {mockAppointments.map(apt => (
-              <div key={apt.id} className="flex items-center gap-4 p-4 hover:bg-gray-50 transition-colors">
-                <div className="w-16 text-center">
-                  <span className="text-lg font-bold text-gray-900">{apt.time}</span>
-                </div>
-                <div className="w-1 h-10 bg-green-400 rounded-full" />
-                <div className="flex-1 min-w-0">
-                  <p className="font-medium text-gray-900">{apt.customer}</p>
-                  <p className="text-sm text-gray-500">{apt.service}</p>
-                </div>
-                <span className={`text-xs font-medium px-2.5 py-1 rounded-full ${statusColors[apt.status]}`}>
-                  {statusLabels[apt.status]}
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Quick actions & recent activity */}
-        <div className="space-y-6">
-          {/* Quick stats */}
-          <div className="bg-white rounded-xl border border-gray-200 p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Resumo do Bot</h2>
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2 text-sm text-gray-600">
-                  <CheckCircle className="w-4 h-4 text-green-500" />
-                  Agendamentos via bot
-                </div>
-                <span className="font-semibold text-gray-900">12</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2 text-sm text-gray-600">
-                  <MessageCircle className="w-4 h-4 text-blue-500" />
-                  Mensagens hoje
-                </div>
-                <span className="font-semibold text-gray-900">47</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2 text-sm text-gray-600">
-                  <Clock className="w-4 h-4 text-purple-500" />
-                  Tempo médio de resposta
-                </div>
-                <span className="font-semibold text-gray-900">2s</span>
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        {stats.map((s) => (
+          <Link
+            key={s.label}
+            href={s.href}
+            className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-5 shadow-sm hover:border-green-400 dark:hover:border-green-700 transition"
+          >
+            <div className="flex items-center justify-between mb-3">
+              <div className="w-9 h-9 bg-green-100 dark:bg-green-900/40 rounded-lg flex items-center justify-center">
+                <s.icon className="w-5 h-5 text-green-600 dark:text-green-400" />
               </div>
             </div>
-          </div>
-
-          {/* Bot status */}
-          <div className="bg-green-50 border border-green-200 rounded-xl p-6">
-            <div className="flex items-center gap-3 mb-3">
-              <div className="w-3 h-3 rounded-full bg-green-500 animate-pulse" />
-              <span className="font-semibold text-green-800">Bot ativo</span>
-            </div>
-            <p className="text-sm text-green-700">
-              O assistente está online e respondendo automaticamente no WhatsApp.
-            </p>
-          </div>
-        </div>
+            <p className="text-2xl font-bold text-gray-900 dark:text-white">{s.value}</p>
+            <p className="text-gray-500 text-sm">{s.label}</p>
+          </Link>
+        ))}
       </div>
     </div>
   )
