@@ -1,119 +1,99 @@
-'use client'
+import { redirect } from 'next/navigation'
+import { Calendar, Clock, User } from 'lucide-react'
+import { getCurrentUserAndBusiness } from '@/lib/auth/business'
+import { brazilDayBoundsISO, nowInBrazil } from '@/lib/utils/time'
 
-import { useState } from 'react'
-import { format, addDays, startOfWeek, isSameDay } from 'date-fns'
-import { ptBR } from 'date-fns/locale'
-import { ChevronLeft, ChevronRight, Plus } from 'lucide-react'
-import { cn } from '@/lib/utils/cn'
+export const dynamic = 'force-dynamic'
 
-// Mock appointments
-const mockAppointments = [
-  { id: '1', customer: 'Carlos Silva', service: 'Lavagem Completa', date: new Date(), startHour: 9, duration: 90, color: 'bg-green-100 border-green-400 text-green-800' },
-  { id: '2', customer: 'Maria Oliveira', service: 'Lavagem Simples', date: new Date(), startHour: 10, duration: 45, color: 'bg-blue-100 border-blue-400 text-blue-800' },
-  { id: '3', customer: 'João Pereira', service: 'Polimento', date: addDays(new Date(), 1), startHour: 9, duration: 180, color: 'bg-purple-100 border-purple-400 text-purple-800' },
-  { id: '4', customer: 'Ana Costa', service: 'Higienização', date: addDays(new Date(), 2), startHour: 14, duration: 120, color: 'bg-orange-100 border-orange-400 text-orange-800' },
-]
+interface ApptRow {
+  id: string
+  scheduled_at: string
+  duration_minutes: number
+  status: string
+  price: number | null
+  notes: string | null
+  services: { name: string } | null
+  customers: { name: string | null; phone: string } | null
+}
 
-const HOURS = Array.from({ length: 11 }, (_, i) => i + 8) // 8h to 18h
+const fmtTime = (iso: string) =>
+  new Date(iso).toLocaleTimeString('pt-BR', { timeZone: 'America/Sao_Paulo', hour: '2-digit', minute: '2-digit' })
+const fmtDay = (iso: string) =>
+  new Date(iso).toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo', weekday: 'long', day: '2-digit', month: 'long' })
+const dayKey = (iso: string) =>
+  new Date(iso).toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' })
 
-export default function AgendaPage() {
-  const [currentWeekStart, setCurrentWeekStart] = useState(
-    startOfWeek(new Date(), { weekStartsOn: 1 })
-  )
+export default async function AgendaPage() {
+  const { user, business, supabase } = await getCurrentUserAndBusiness()
+  if (!user) redirect('/login')
+  if (!business) redirect('/login')
 
-  const weekDays = Array.from({ length: 6 }, (_, i) => addDays(currentWeekStart, i))
+  const { start } = brazilDayBoundsISO(nowInBrazil().iso)
+  const { data } = (await supabase
+    .from('appointments')
+    .select('id,scheduled_at,duration_minutes,status,price,notes,services(name),customers(name,phone)')
+    .eq('business_id', business.id)
+    .neq('status', 'cancelled')
+    .gte('scheduled_at', start)
+    .order('scheduled_at', { ascending: true })) as { data: ApptRow[] | null }
 
-  const prevWeek = () => setCurrentWeekStart(d => addDays(d, -7))
-  const nextWeek = () => setCurrentWeekStart(d => addDays(d, 7))
+  const appts = data ?? []
 
-  const monthLabel = format(currentWeekStart, "MMMM 'de' yyyy", { locale: ptBR })
+  // Agrupa por dia (horário BR)
+  const groups = new Map<string, ApptRow[]>()
+  for (const a of appts) {
+    const k = dayKey(a.scheduled_at)
+    if (!groups.has(k)) groups.set(k, [])
+    groups.get(k)!.push(a)
+  }
 
   return (
-    <div className="p-8 h-full flex flex-col">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Agenda</h1>
-          <p className="text-gray-500 capitalize">{monthLabel}</p>
-        </div>
-        <div className="flex items-center gap-3">
-          <div className="flex items-center bg-white border border-gray-200 rounded-lg">
-            <button onClick={prevWeek} className="p-2 hover:bg-gray-50 rounded-l-lg transition-colors">
-              <ChevronLeft className="w-5 h-5 text-gray-600" />
-            </button>
-            <button
-              onClick={() => setCurrentWeekStart(startOfWeek(new Date(), { weekStartsOn: 1 }))}
-              className="px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors border-x border-gray-200"
-            >
-              Hoje
-            </button>
-            <button onClick={nextWeek} className="p-2 hover:bg-gray-50 rounded-r-lg transition-colors">
-              <ChevronRight className="w-5 h-5 text-gray-600" />
-            </button>
-          </div>
-          <button className="flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm font-medium transition-colors">
-            <Plus className="w-4 h-4" />
-            Novo agendamento
-          </button>
-        </div>
+    <div className="p-8 max-w-3xl">
+      <div className="mb-8">
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Agenda</h1>
+        <p className="text-gray-500 text-sm mt-1">Próximos agendamentos do seu negócio.</p>
       </div>
 
-      {/* Calendar grid */}
-      <div className="flex-1 bg-white rounded-xl border border-gray-200 overflow-auto">
-        {/* Day headers */}
-        <div className="grid grid-cols-7 border-b border-gray-200 sticky top-0 bg-white z-10">
-          <div className="p-3 text-center text-xs font-medium text-gray-400 uppercase border-r border-gray-100">
-            Hora
-          </div>
-          {weekDays.map(day => {
-            const isToday = isSameDay(day, new Date())
-            return (
-              <div key={day.toISOString()} className="p-3 text-center border-r border-gray-100 last:border-r-0">
-                <p className="text-xs font-medium text-gray-500 uppercase">
-                  {format(day, 'EEE', { locale: ptBR })}
-                </p>
-                <p className={cn(
-                  'text-lg font-bold mt-0.5',
-                  isToday ? 'text-green-600' : 'text-gray-900'
-                )}>
-                  {format(day, 'd')}
-                </p>
-                {isToday && <div className="w-1.5 h-1.5 bg-green-500 rounded-full mx-auto mt-1" />}
-              </div>
-            )
-          })}
+      {appts.length === 0 ? (
+        <div className="text-center py-20 text-gray-500 border border-dashed border-gray-300 dark:border-white/10 rounded-2xl">
+          <Calendar className="w-9 h-9 mx-auto mb-3 text-gray-300 dark:text-gray-700" />
+          <p>Nenhum agendamento ainda.</p>
+          <p className="text-sm mt-1">Quando o bot agendar, aparece aqui.</p>
         </div>
-
-        {/* Time slots */}
-        {HOURS.map(hour => (
-          <div key={hour} className="grid grid-cols-7 border-b border-gray-100 min-h-[60px]">
-            <div className="p-2 text-xs text-gray-400 text-center border-r border-gray-100 font-medium pt-3">
-              {hour}:00
-            </div>
-            {weekDays.map(day => {
-              const dayApts = mockAppointments.filter(
-                apt => isSameDay(apt.date, day) && apt.startHour === hour
-              )
-              return (
-                <div key={day.toISOString()} className="border-r border-gray-100 last:border-r-0 p-1 relative">
-                  {dayApts.map(apt => (
-                    <div
-                      key={apt.id}
-                      className={cn(
-                        'rounded-md border-l-2 p-1.5 text-xs cursor-pointer hover:opacity-80 transition-opacity',
-                        apt.color
-                      )}
-                    >
-                      <p className="font-semibold truncate">{apt.customer}</p>
-                      <p className="truncate opacity-75">{apt.service}</p>
+      ) : (
+        <div className="space-y-6">
+          {[...groups.entries()].map(([, dayAppts]) => (
+            <div key={dayAppts[0].id}>
+              <p className="text-xs font-semibold uppercase tracking-wide text-emerald-600 dark:text-emerald-400 mb-3 first-letter:uppercase">
+                {fmtDay(dayAppts[0].scheduled_at)}
+              </p>
+              <div className="space-y-2.5">
+                {dayAppts.map((a) => (
+                  <div key={a.id} className="glass rounded-xl p-4 flex items-center gap-4">
+                    <div className="flex flex-col items-center justify-center w-16 shrink-0">
+                      <Clock className="w-4 h-4 text-emerald-500 mb-0.5" />
+                      <span className="text-sm font-semibold text-gray-900 dark:text-white">{fmtTime(a.scheduled_at)}</span>
                     </div>
-                  ))}
-                </div>
-              )
-            })}
-          </div>
-        ))}
-      </div>
+                    <div className="flex-1 min-w-0 border-l border-gray-200 dark:border-white/10 pl-4">
+                      <p className="font-medium text-gray-900 dark:text-white truncate">{a.services?.name ?? 'Serviço'}</p>
+                      <p className="text-sm text-gray-500 flex items-center gap-1">
+                        <User className="w-3.5 h-3.5" />
+                        {a.customers?.name ?? a.customers?.phone ?? 'Cliente'}
+                        <span className="text-gray-400">· {a.duration_minutes} min</span>
+                      </p>
+                    </div>
+                    {a.price != null && (
+                      <span className="text-sm font-semibold text-gray-700 dark:text-gray-300 shrink-0">
+                        R$ {Number(a.price).toFixed(2)}
+                      </span>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   )
 }

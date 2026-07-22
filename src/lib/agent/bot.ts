@@ -1,5 +1,6 @@
 import Groq from 'groq-sdk'
 import { computeAvailableSlots, weekdayKey, type BusyInterval } from './availability'
+import { nowInBrazil, scheduledAtISO } from '@/lib/utils/time'
 import type { Business, Service, BotMessages, WorkingHours } from '@/types'
 
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY })
@@ -34,25 +35,18 @@ const nicheName: Record<string, string> = {
   unhas: 'estúdio de unhas',
 }
 
-function todayInfo() {
-  const now = new Date()
-  const dd = String(now.getDate()).padStart(2, '0')
-  const mm = String(now.getMonth() + 1).padStart(2, '0')
-  return { iso: `${now.getFullYear()}-${mm}-${dd}`, now }
-}
-
 async function slotsForDate(
   business: Business,
   service: Service | undefined,
   dateISO: string,
   getBusy: (d: string) => Promise<BusyInterval[]>
 ) {
-  const date = new Date(dateISO + 'T00:00:00')
+  const date = new Date(dateISO + 'T12:00:00-03:00') // meio-dia BR, evita virada de dia por fuso
   const window = (business.working_hours as WorkingHours)[weekdayKey(date)] ?? null
   const busy = await getBusy(dateISO)
-  const now = new Date()
-  const isToday = date.toDateString() === now.toDateString()
-  const nowMin = isToday ? now.getHours() * 60 + now.getMinutes() : null
+  const br = nowInBrazil()
+  const isToday = dateISO === br.iso
+  const nowMin = isToday ? br.minutes : null
   return computeAvailableSlots({
     window,
     serviceDurationMin: service?.duration_minutes ?? business.slot_duration_minutes,
@@ -65,7 +59,9 @@ async function slotsForDate(
 
 export async function runBotTurn(input: BotTurnInput): Promise<BotTurnOutput> {
   const { business, services, botMessages, history, userMessage, context, getBusyForDate } = input
-  const { iso: todayISO, now } = todayInfo()
+  const br = nowInBrazil()
+  const todayISO = br.iso
+  const nowLabel = br.date.toLocaleString('pt-BR', { timeZone: 'UTC' })
 
   const servicesText = services
     .map((s, i) => `${i + 1}. [id:${s.id}] ${s.name}${s.price ? ` - R$ ${Number(s.price).toFixed(2)}` : ''} (${s.duration_minutes} min)`)
@@ -82,7 +78,7 @@ ${tone}
 SERVIÇOS:
 ${servicesText || '(nenhum serviço cadastrado)'}
 ENDEREÇO: ${business.address || 'a confirmar'}
-DATA/HORA ATUAL: ${now.toLocaleString('pt-BR')} (hoje = ${todayISO})
+DATA/HORA ATUAL: ${nowLabel} (hoje = ${todayISO})
 
 Fluxo: descubra o SERVIÇO, depois a DATA (YYYY-MM-DD), depois mostre HORÁRIOS reais, depois confirme.
 NUNCA invente horários — quando tiver serviço e data, peça os horários com "request_slots": true.
@@ -155,13 +151,11 @@ Responda SOMENTE com JSON:
   if (parsed.confirm_booking && next.selected_service_id && next.selected_date && next.selected_time) {
     const service = services.find((s) => s.id === next.selected_service_id)
     if (service) {
-      const [h, m] = next.selected_time.split(':').map(Number)
-      const dt = new Date(next.selected_date + 'T00:00:00')
-      dt.setHours(h || 0, m || 0, 0, 0)
+      const scheduledAt = scheduledAtISO(next.selected_date, next.selected_time)
       return {
         reply: parsed.reply || botMessages?.confirmation || '✅ Agendado com sucesso! Te esperamos. 😊',
         context: { ...next, stage: 'done' },
-        booking: { service_id: service.id, scheduled_at: dt.toISOString(), duration_minutes: service.duration_minutes },
+        booking: { service_id: service.id, scheduled_at: scheduledAt, duration_minutes: service.duration_minutes },
       }
     }
   }
