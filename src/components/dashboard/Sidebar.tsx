@@ -11,6 +11,7 @@ import {
   MessageCircle,
   Settings,
   Wrench,
+  Bot,
   LogOut,
   Zap,
 } from 'lucide-react'
@@ -18,6 +19,7 @@ import {
 const navItems = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/servicos', label: 'Serviços', icon: Wrench },
+  { href: '/testar', label: 'Testar bot', icon: Bot },
   { href: '/agenda', label: 'Agenda', icon: Calendar },
   { href: '/clientes', label: 'Clientes', icon: Users },
   { href: '/conversas', label: 'Conversas', icon: MessageCircle },
