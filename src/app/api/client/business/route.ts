@@ -10,7 +10,7 @@ export async function PATCH(request: NextRequest) {
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const body = await request.json()
-  const fields = ['name', 'address', 'phone', 'niche', 'slot_duration_minutes', 'working_hours']
+  const fields = ['name', 'address', 'phone', 'niche', 'slot_duration_minutes', 'working_hours', 'return_days']
   const updates: Record<string, unknown> = {}
   for (const f of fields) if (f in body) updates[f] = body[f]
 

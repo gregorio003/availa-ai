@@ -3,7 +3,7 @@ import { updateSession } from '@/lib/supabase/proxy'
 
 // Rotas que exigem login. Verificação fina de papel (super_admin vs cliente)
 // acontece nos layouts server-side — aqui só barramos quem não está logado.
-const PROTECTED = ['/dashboard', '/admin', '/agenda', '/clientes', '/conversas', '/configuracoes', '/servicos', '/testar', '/onboarding']
+const PROTECTED = ['/dashboard', '/admin', '/agenda', '/clientes', '/conversas', '/configuracoes', '/servicos', '/testar', '/retornos', '/onboarding']
 
 export async function proxy(request: NextRequest) {
   const { supabaseResponse, user } = await updateSession(request)

@@ -37,12 +37,19 @@ export interface Business {
   commission_pct: number
   subscription_status: string
   subscription_valid_until: string | null
+  return_days: number
   // WhatsApp (Z-API / Evolution por estabelecimento)
   zapi_instance_id: string | null
   zapi_token: string | null
   whatsapp_connected: boolean
   active: boolean
   created_at: string
+}
+
+export interface CollectField {
+  key: string
+  label: string
+  enabled: boolean
 }
 
 export interface BotMessages {
@@ -54,6 +61,9 @@ export interface BotMessages {
   time_prompt: string
   confirmation: string
   advance_message: string
+  persona: string
+  return_message: string
+  collect_fields: CollectField[]
   created_at: string
   updated_at: string
 }

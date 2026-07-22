@@ -31,9 +31,10 @@ export async function PATCH(request: NextRequest) {
   if (!businessId) return NextResponse.json({ error: 'Sem negócio' }, { status: 404 })
 
   const body = await request.json()
-  const fields = ['greeting', 'service_prompt', 'date_prompt', 'time_prompt', 'confirmation', 'advance_message']
+  const fields = ['greeting', 'service_prompt', 'date_prompt', 'time_prompt', 'confirmation', 'advance_message', 'persona', 'return_message']
   const updates: Record<string, unknown> = { updated_at: new Date().toISOString() }
   for (const f of fields) if (typeof body[f] === 'string') updates[f] = body[f]
+  if (Array.isArray(body.collect_fields)) updates.collect_fields = body.collect_fields
 
   const { error } = await supabase.from('bot_messages').update(updates).eq('business_id', businessId)
   if (error) return NextResponse.json({ error: error.message }, { status: 400 })

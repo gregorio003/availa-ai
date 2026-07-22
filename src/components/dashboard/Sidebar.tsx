@@ -12,6 +12,7 @@ import {
   Settings,
   Wrench,
   Bot,
+  RefreshCw,
   LogOut,
   Zap,
 } from 'lucide-react'
@@ -21,6 +22,7 @@ const navItems = [
   { href: '/servicos', label: 'Serviços', icon: Wrench },
   { href: '/testar', label: 'Testar bot', icon: Bot },
   { href: '/agenda', label: 'Agenda', icon: Calendar },
+  { href: '/retornos', label: 'Retornos', icon: RefreshCw },
   { href: '/clientes', label: 'Clientes', icon: Users },
   { href: '/conversas', label: 'Conversas', icon: MessageCircle },
   { href: '/configuracoes', label: 'Configurações', icon: Settings },

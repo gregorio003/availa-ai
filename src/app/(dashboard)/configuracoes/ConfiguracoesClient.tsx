@@ -2,8 +2,8 @@
 
 import { useState, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
-import { Save, Bot, CheckCircle, ExternalLink, Loader2, MessageSquare } from 'lucide-react'
-import type { Business, BotMessages, WorkingHours, DayHours } from '@/types'
+import { Save, Bot, CheckCircle, ExternalLink, Loader2, MessageSquare, Heart, ListChecks, RefreshCw, Plus, Trash2 } from 'lucide-react'
+import type { Business, BotMessages, WorkingHours, DayHours, CollectField } from '@/types'
 
 const DAYS: { key: keyof WorkingHours; label: string }[] = [
   { key: 'mon', label: 'Segunda-feira' },
@@ -22,6 +22,13 @@ const BOT_FIELDS: { key: keyof BotMessages; label: string; hint: string }[] = [
   { key: 'time_prompt', label: 'Pergunta do horário', hint: 'Quando o bot pergunta o horário' },
   { key: 'confirmation', label: 'Confirmação do agendamento', hint: 'Mensagem quando o agendamento é confirmado' },
   { key: 'advance_message', label: 'Mensagem de sinal', hint: 'Quando é necessário adiantamento (se ativado)' },
+]
+
+const PERSONA_PRESETS = [
+  { label: '🤗 Acolhedor', text: 'Seja muito acolhedor, caloroso e simpático, como um atendente querido que faz o cliente se sentir em casa. Converse de forma leve e humana.' },
+  { label: '⚡ Direto', text: 'Seja objetivo e ágil, resolvendo o agendamento rápido, mas sempre educado e gentil.' },
+  { label: '😄 Descontraído', text: 'Seja descontraído e divertido, com um toque de bom humor, deixando a conversa leve e agradável.' },
+  { label: '💼 Profissional', text: 'Seja cordial e profissional, transmitindo confiança e organização, sem ser frio.' },
 ]
 
 function GoogleCalendarSection() {
@@ -74,6 +81,15 @@ export function ConfiguracoesClient({ business, botMessages }: { business: Busin
     confirmation: botMessages?.confirmation ?? '',
     advance_message: botMessages?.advance_message ?? '',
   })
+  const [persona, setPersona] = useState(botMessages?.persona ?? '')
+  const [collectFields, setCollectFields] = useState<CollectField[]>(botMessages?.collect_fields ?? [])
+  const [returnMessage, setReturnMessage] = useState(botMessages?.return_message ?? '')
+  const [returnDays, setReturnDays] = useState(business.return_days ?? 30)
+
+  const setField = (i: number, patch: Partial<CollectField>) =>
+    setCollectFields((prev) => prev.map((f, idx) => (idx === i ? { ...f, ...patch } : f)))
+  const addField = () => setCollectFields((prev) => [...prev, { key: `campo_${prev.length + 1}`, label: '', enabled: true }])
+  const removeField = (i: number) => setCollectFields((prev) => prev.filter((_, idx) => idx !== i))
 
   const setDay = (key: keyof WorkingHours, patch: Partial<DayHours> | null) => {
     setHours((prev) => ({
@@ -89,14 +105,19 @@ export function ConfiguracoesClient({ business, botMessages }: { business: Busin
       const r1 = await fetch('/api/client/business', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...biz, working_hours: hours }),
+        body: JSON.stringify({ ...biz, working_hours: hours, return_days: Number(returnDays) || 30 }),
       })
       if (!r1.ok) throw new Error((await r1.json()).error)
 
       const r2 = await fetch('/api/client/bot-messages', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(msgs),
+        body: JSON.stringify({
+          ...msgs,
+          persona,
+          return_message: returnMessage,
+          collect_fields: collectFields.filter((f) => f.label.trim()),
+        }),
       })
       if (!r2.ok) throw new Error((await r2.json()).error)
 
@@ -195,6 +216,59 @@ export function ConfiguracoesClient({ business, botMessages }: { business: Busin
               </div>
             ))}
           </div>
+        </Section>
+
+        {/* Personalidade do bot */}
+        <Section title="Personalidade do bot" icon={<Heart className="w-5 h-5 text-green-600" />}>
+          <p className="text-xs text-gray-500 mb-3">
+            Descreva o jeitão do bot — ele conversa seguindo esse tom. O cliente deve se sentir confortável, nunca atendido por um robô chato.
+          </p>
+          <div className="flex flex-wrap gap-2 mb-3">
+            {PERSONA_PRESETS.map((p) => (
+              <button
+                key={p.label}
+                type="button"
+                onClick={() => setPersona(p.text)}
+                className="text-xs px-3 py-1.5 rounded-full bg-black/5 dark:bg-white/5 hover:bg-emerald-500/15 text-gray-700 dark:text-gray-300 transition"
+              >
+                {p.label}
+              </button>
+            ))}
+          </div>
+          <textarea value={persona} onChange={(e) => setPersona(e.target.value)} rows={3} className={inputCls + ' resize-none'} />
+        </Section>
+
+        {/* O que o bot pergunta */}
+        <Section title="O que o bot pergunta" icon={<ListChecks className="w-5 h-5 text-green-600" />}>
+          <p className="text-xs text-gray-500 mb-3">
+            Marque o que o bot deve descobrir na conversa (ele pergunta de forma natural). Ex: nome, o carro, se precisa buscar, endereço.
+          </p>
+          <div className="space-y-2">
+            {collectFields.map((f, i) => (
+              <div key={i} className="flex items-center gap-2">
+                <input type="checkbox" checked={f.enabled} onChange={(e) => setField(i, { enabled: e.target.checked })} className="w-4 h-4 accent-green-600 shrink-0" />
+                <input value={f.label} onChange={(e) => setField(i, { label: e.target.value })} placeholder="Ex: Placa do carro" className={inputCls + ' flex-1'} />
+                <button type="button" onClick={() => removeField(i)} className="p-2 text-gray-400 hover:text-red-500 shrink-0"><Trash2 className="w-4 h-4" /></button>
+              </div>
+            ))}
+          </div>
+          <button type="button" onClick={addField} className="mt-3 flex items-center gap-1.5 text-sm text-green-600 dark:text-green-400 hover:text-green-500">
+            <Plus className="w-4 h-4" /> Adicionar pergunta
+          </button>
+        </Section>
+
+        {/* Retorno de clientes */}
+        <Section title="Retorno de clientes" icon={<RefreshCw className="w-5 h-5 text-green-600" />}>
+          <p className="text-xs text-gray-500 mb-4">
+            A Availa avisa quando um cliente está na hora de voltar (na aba Retornos). Configure o intervalo e a mensagem de reengajamento.
+          </p>
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Sugerir retorno após (dias)</label>
+            <input type="number" min={1} value={returnDays} onChange={(e) => setReturnDays(Number(e.target.value))} className={inputCls + ' w-28'} />
+          </div>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Mensagem de retorno</label>
+          <p className="text-xs text-gray-400 mb-1">Use {'{nome}'} para incluir o nome do cliente.</p>
+          <textarea value={returnMessage} onChange={(e) => setReturnMessage(e.target.value)} rows={2} className={inputCls + ' resize-none'} />
         </Section>
 
         {/* Bot / agenda */}

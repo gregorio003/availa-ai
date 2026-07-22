@@ -63,6 +63,14 @@ export async function POST(request: NextRequest) {
       const price = service?.price != null ? Number(service.price) : null
       const commission = price != null ? Number(((price * Number(business.commission_pct)) / 100).toFixed(2)) : null
 
+      const collected = result.booking.collected ?? {}
+      const collectedName = collected.name || 'Cliente (simulação)'
+      const extraNotes = Object.entries(collected)
+        .filter(([k]) => k !== 'name')
+        .map(([k, v]) => `${k}: ${v}`)
+        .join(' · ')
+      const notes = ['Simulação (Testar bot)', extraNotes].filter(Boolean).join(' — ')
+
       // cliente de simulação (reutilizado por telefone único)
       let { data: customer } = await supabase
         .from('customers')
@@ -73,10 +81,12 @@ export async function POST(request: NextRequest) {
       if (!customer) {
         const { data: c } = await supabase
           .from('customers')
-          .insert({ business_id: business.id, phone: 'simulacao', name: 'Cliente (simulação)' })
+          .insert({ business_id: business.id, phone: 'simulacao', name: collectedName })
           .select('id')
           .single()
         customer = c
+      } else if (collected.name) {
+        await supabase.from('customers').update({ name: collectedName }).eq('id', customer.id)
       }
 
       // evita duplicar se a IA confirmar em mais de uma mensagem
@@ -99,7 +109,7 @@ export async function POST(request: NextRequest) {
           status: 'confirmed',
           price,
           commission_amount: commission,
-          notes: 'Simulação (Testar bot)',
+          notes,
         })
       }
     }

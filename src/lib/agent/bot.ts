@@ -10,6 +10,7 @@ export interface BotContext {
   selected_service_id?: string
   selected_date?: string
   selected_time?: string
+  collected?: Record<string, string>
 }
 
 export interface BotTurnInput {
@@ -25,7 +26,7 @@ export interface BotTurnInput {
 export interface BotTurnOutput {
   reply: string
   context: BotContext
-  booking?: { service_id: string; scheduled_at: string; duration_minutes: number }
+  booking?: { service_id: string; scheduled_at: string; duration_minutes: number; collected: Record<string, string> }
 }
 
 const nicheName: Record<string, string> = {
@@ -67,21 +68,35 @@ export async function runBotTurn(input: BotTurnInput): Promise<BotTurnOutput> {
     .map((s, i) => `${i + 1}. [id:${s.id}] ${s.name}${s.price ? ` - R$ ${Number(s.price).toFixed(2)}` : ''} (${s.duration_minutes} min)`)
     .join('\n')
 
-  const tone = botMessages?.greeting
-    ? `Estilo de saudação do negócio (use como referência de tom): "${botMessages.greeting}"`
+  const persona =
+    botMessages?.persona ||
+    'Seja acolhedor, simpático e natural, como um bom atendente humano. Deixe o cliente à vontade, sem parecer robótico, insistente ou chato.'
+
+  const fields = (botMessages?.collect_fields ?? []).filter((f) => f.enabled)
+  const collectText = fields.length
+    ? `INFORMAÇÕES A COLETAR (de forma leve e natural ao longo da conversa, NUNCA como interrogatório seco — encaixe as perguntas no papo):\n${fields
+        .map((f) => `- ${f.label} (chave: ${f.key})`)
+        .join('\n')}\nQuando o cliente informar algo, coloque em "collected" (ex: {"name":"João","vehicle":"Gol prata"}).`
+    : ''
+  const already = context.collected && Object.keys(context.collected).length
+    ? `Já coletado até agora: ${JSON.stringify(context.collected)} (não pergunte de novo).`
     : ''
 
-  const systemPrompt = `Você é o atendente virtual de "${business.name}", um ${nicheName[business.niche] ?? 'prestador de serviços'}.
-Ajude o cliente a agendar de forma simples e amigável, como no WhatsApp. Trate por "você", mensagens curtas (máx 3 linhas), emojis com moderação.
-${tone}
+  const systemPrompt = `Você é o atendente virtual de "${business.name}", um ${nicheName[business.niche] ?? 'prestador de serviços'}, atendendo pelo WhatsApp.
+
+PERSONALIDADE E TOM: ${persona}
+Fale de forma humana e calorosa, mensagens curtas (máx 3 linhas), trate por "você". Não seja repetitivo nem robótico. O cliente deve se sentir confortável, como conversando com alguém simpático do estabelecimento.
 
 SERVIÇOS:
 ${servicesText || '(nenhum serviço cadastrado)'}
 ENDEREÇO: ${business.address || 'a confirmar'}
 DATA/HORA ATUAL: ${nowLabel} (hoje = ${todayISO})
 
-Fluxo: descubra o SERVIÇO, depois a DATA (YYYY-MM-DD), depois mostre HORÁRIOS reais, depois confirme.
-NUNCA invente horários — quando tiver serviço e data, peça os horários com "request_slots": true.
+${collectText}
+${already}
+
+Fluxo natural: entenda o que a pessoa quer, colete as informações necessárias no meio da conversa, descubra o SERVIÇO e a DATA (YYYY-MM-DD), mostre HORÁRIOS reais e confirme.
+NUNCA invente horários — quando tiver serviço e data, peça com "request_slots": true.
 
 Responda SOMENTE com JSON:
 {
@@ -90,6 +105,7 @@ Responda SOMENTE com JSON:
  "selected_service_id": "id ou null",
  "selected_date": "YYYY-MM-DD ou null",
  "selected_time": "HH:MM ou null",
+ "collected": { },
  "request_slots": true/false,
  "confirm_booking": true/false
 }`
@@ -106,6 +122,7 @@ Responda SOMENTE com JSON:
     selected_service_id?: string | null
     selected_date?: string | null
     selected_time?: string | null
+    collected?: Record<string, string>
     request_slots?: boolean
     confirm_booking?: boolean
   } = {}
@@ -128,6 +145,7 @@ Responda SOMENTE com JSON:
     selected_service_id: parsed.selected_service_id ?? context.selected_service_id,
     selected_date: parsed.selected_date ?? context.selected_date,
     selected_time: parsed.selected_time ?? context.selected_time,
+    collected: { ...(context.collected ?? {}), ...(parsed.collected ?? {}) },
   }
 
   // Mostrar horários REAIS calculados pelo motor
@@ -155,7 +173,12 @@ Responda SOMENTE com JSON:
       return {
         reply: parsed.reply || botMessages?.confirmation || '✅ Agendado com sucesso! Te esperamos. 😊',
         context: { ...next, stage: 'done' },
-        booking: { service_id: service.id, scheduled_at: scheduledAt, duration_minutes: service.duration_minutes },
+        booking: {
+          service_id: service.id,
+          scheduled_at: scheduledAt,
+          duration_minutes: service.duration_minutes,
+          collected: next.collected ?? {},
+        },
       }
     }
   }
