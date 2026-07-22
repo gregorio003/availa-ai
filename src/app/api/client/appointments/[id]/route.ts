@@ -13,11 +13,18 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const body = await request.json()
-  if (!ALLOWED.includes(body.status)) {
-    return NextResponse.json({ error: 'Status inválido' }, { status: 400 })
+  const updates: Record<string, unknown> = {}
+  if ('status' in body) {
+    if (!ALLOWED.includes(body.status)) return NextResponse.json({ error: 'Status inválido' }, { status: 400 })
+    updates.status = body.status
+  }
+  if ('paid' in body) updates.paid = !!body.paid
+
+  if (Object.keys(updates).length === 0) {
+    return NextResponse.json({ error: 'Nada para atualizar' }, { status: 400 })
   }
 
-  const { error } = await supabase.from('appointments').update({ status: body.status }).eq('id', id)
+  const { error } = await supabase.from('appointments').update(updates).eq('id', id)
   if (error) return NextResponse.json({ error: error.message }, { status: 400 })
   return NextResponse.json({ ok: true })
 }

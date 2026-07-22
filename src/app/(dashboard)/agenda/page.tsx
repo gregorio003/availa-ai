@@ -15,7 +15,7 @@ export default async function AgendaPage() {
 
   const { data } = (await supabase
     .from('appointments')
-    .select('id,scheduled_at,duration_minutes,status,price,services(name),customers(name,phone)')
+    .select('id,scheduled_at,duration_minutes,status,price,paid,services(name),customers(name,phone)')
     .eq('business_id', business.id)
     .neq('status', 'cancelled')
     .gte('scheduled_at', from)
