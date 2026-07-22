@@ -79,7 +79,17 @@ export async function POST(request: NextRequest) {
         customer = c
       }
 
-      if (customer) {
+      // evita duplicar se a IA confirmar em mais de uma mensagem
+      const { data: existing } = await supabase
+        .from('appointments')
+        .select('id')
+        .eq('business_id', business.id)
+        .eq('service_id', result.booking.service_id)
+        .eq('scheduled_at', result.booking.scheduled_at)
+        .neq('status', 'cancelled')
+        .maybeSingle()
+
+      if (customer && !existing) {
         await supabase.from('appointments').insert({
           business_id: business.id,
           customer_id: customer.id,
