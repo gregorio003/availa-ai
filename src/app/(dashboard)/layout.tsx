@@ -16,7 +16,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
 
   return (
     <div className="flex h-screen">
-      <Sidebar businessName={business!.name} email={user.email ?? ''} />
+      <Sidebar businessName={business!.name} email={user.email ?? ''} logoUrl={business!.logo_url} />
       <main className="flex-1 overflow-auto">{children}</main>
     </div>
   )

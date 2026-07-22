@@ -28,7 +28,7 @@ const navItems = [
   { href: '/configuracoes', label: 'Configurações', icon: Settings },
 ]
 
-export function Sidebar({ businessName, email }: { businessName: string; email: string }) {
+export function Sidebar({ businessName, email, logoUrl }: { businessName: string; email: string; logoUrl?: string | null }) {
   const pathname = usePathname()
 
   return (
@@ -70,8 +70,13 @@ export function Sidebar({ businessName, email }: { businessName: string; email: 
       <div className="p-4 border-t border-black/10 dark:border-white/10 space-y-1">
         <ThemeToggle />
         <div className="flex items-center gap-3 px-3 py-2">
-          <div className="w-8 h-8 rounded-full bg-green-100 dark:bg-green-900/50 flex items-center justify-center text-sm font-semibold text-green-700 dark:text-green-300 shrink-0">
-            {businessName.charAt(0).toUpperCase()}
+          <div className="w-8 h-8 rounded-full overflow-hidden bg-green-100 dark:bg-green-900/50 flex items-center justify-center text-sm font-semibold text-green-700 dark:text-green-300 shrink-0">
+            {logoUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={logoUrl} alt="Logo" className="w-full h-full object-cover" />
+            ) : (
+              businessName.charAt(0).toUpperCase()
+            )}
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-sm font-medium text-gray-900 dark:text-white truncate">{businessName}</p>

@@ -2,7 +2,7 @@
 
 import { useState, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
-import { Save, Bot, CheckCircle, ExternalLink, Loader2, MessageSquare, Heart, ListChecks, RefreshCw, Plus, Trash2 } from 'lucide-react'
+import { Save, Bot, CheckCircle, ExternalLink, Loader2, MessageSquare, Heart, ListChecks, RefreshCw, Plus, Trash2, Upload, Image as ImageIcon } from 'lucide-react'
 import type { Business, BotMessages, WorkingHours, DayHours, CollectField } from '@/types'
 
 const DAYS: { key: keyof WorkingHours; label: string }[] = [
@@ -86,6 +86,25 @@ export function ConfiguracoesClient({ business, botMessages }: { business: Busin
   const [returnMessage, setReturnMessage] = useState(botMessages?.return_message ?? '')
   const [returnDays, setReturnDays] = useState(business.return_days ?? 30)
 
+  const [logoUrl, setLogoUrl] = useState<string | null>(business.logo_url)
+  const [uploadingLogo, setUploadingLogo] = useState(false)
+
+  const uploadLogo = async (file: File) => {
+    setUploadingLogo(true)
+    setError('')
+    const fd = new FormData()
+    fd.append('file', file)
+    const res = await fetch('/api/client/logo', { method: 'POST', body: fd })
+    const data = await res.json()
+    setUploadingLogo(false)
+    if (!res.ok) return setError(data.error ?? 'Erro ao enviar logo')
+    setLogoUrl(data.logo_url)
+  }
+  const removeLogo = async () => {
+    await fetch('/api/client/logo', { method: 'DELETE' })
+    setLogoUrl(null)
+  }
+
   const setField = (i: number, patch: Partial<CollectField>) =>
     setCollectFields((prev) => prev.map((f, idx) => (idx === i ? { ...f, ...patch } : f)))
   const addField = () => setCollectFields((prev) => [...prev, { key: `campo_${prev.length + 1}`, label: '', enabled: true }])
@@ -150,6 +169,42 @@ export function ConfiguracoesClient({ business, botMessages }: { business: Busin
       {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
 
       <div className="space-y-6">
+        {/* Logo */}
+        <Section title="Logo do estabelecimento" icon={<ImageIcon className="w-5 h-5 text-green-600" />}>
+          <div className="flex items-center gap-4">
+            <div className="w-16 h-16 rounded-xl overflow-hidden bg-emerald-500/10 border border-black/10 dark:border-white/10 flex items-center justify-center shrink-0">
+              {logoUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={logoUrl} alt="Logo" className="w-full h-full object-cover" />
+              ) : (
+                <span className="text-2xl font-bold text-emerald-500">{(biz.name || 'A').charAt(0).toUpperCase()}</span>
+              )}
+            </div>
+            <div className="flex items-center gap-2">
+              <label className="cursor-pointer flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-200 bg-black/5 dark:bg-white/5 hover:bg-black/10 dark:hover:bg-white/10 px-3 py-2 rounded-lg transition">
+                {uploadingLogo ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
+                {logoUrl ? 'Trocar logo' : 'Enviar logo'}
+                <input
+                  type="file"
+                  accept="image/png,image/jpeg,image/webp,image/svg+xml"
+                  className="hidden"
+                  onChange={(e) => {
+                    const f = e.target.files?.[0]
+                    if (f) uploadLogo(f)
+                    e.target.value = ''
+                  }}
+                />
+              </label>
+              {logoUrl && (
+                <button onClick={removeLogo} className="text-sm text-gray-500 hover:text-red-500 px-2 py-2 transition">
+                  Remover
+                </button>
+              )}
+            </div>
+          </div>
+          <p className="text-xs text-gray-400 mt-2">PNG, JPG, WEBP ou SVG · máx 2MB. Aparece na sua barra lateral.</p>
+        </Section>
+
         {/* Dados do negócio */}
         <Section title="Dados do negócio">
           <div className="space-y-4">
