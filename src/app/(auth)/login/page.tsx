@@ -39,7 +39,13 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4">
+    <div
+      className="dark min-h-screen flex items-center justify-center p-4"
+      style={{
+        background:
+          'radial-gradient(900px 520px at 12% -10%, rgba(34,197,94,0.16), transparent 55%), radial-gradient(760px 480px at 100% 0%, rgba(16,185,129,0.09), transparent 52%), #080b0a',
+      }}
+    >
       <div className="w-full max-w-md">
         {/* Logo */}
         <div className="text-center mb-8">

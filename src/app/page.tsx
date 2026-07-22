@@ -28,7 +28,13 @@ const steps = [
 
 export default function LandingPage() {
   return (
-    <div className="min-h-screen text-gray-100">
+    <div
+      className="dark min-h-screen text-gray-100"
+      style={{
+        background:
+          'radial-gradient(900px 520px at 12% -10%, rgba(34,197,94,0.16), transparent 55%), radial-gradient(760px 480px at 100% 0%, rgba(16,185,129,0.09), transparent 52%), #080b0a',
+      }}
+    >
       {/* Nav */}
       <nav className="sticky top-0 z-50 backdrop-blur-xl border-b border-white/5">
         <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
