@@ -17,7 +17,7 @@ function randomPassword() {
 }
 
 const inputCls =
-  'w-full bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg px-3 py-2.5 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition'
+  'w-full bg-white dark:bg-white/[0.04] border border-gray-300 dark:border-white/10 rounded-lg px-3 py-2.5 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition'
 
 export default function NovoClientePage() {
   const router = useRouter()
@@ -66,14 +66,14 @@ export default function NovoClientePage() {
   if (done) {
     return (
       <div className="max-w-md">
-        <div className="bg-white dark:bg-gray-900 border border-green-300 dark:border-green-800 rounded-2xl p-6 shadow-sm">
+        <div className="bg-white dark:bg-white/[0.04] border border-green-300 dark:border-green-800 rounded-2xl p-6 shadow-sm">
           <CheckCircle2 className="w-10 h-10 text-green-500 mb-3" />
           <h1 className="text-xl font-bold text-gray-900 dark:text-white mb-1">Cliente criado! 🎉</h1>
           <p className="text-gray-500 dark:text-gray-400 text-sm mb-5">
             Envie estes dados de acesso para o cliente. Ele entra em{' '}
             <span className="text-gray-800 dark:text-gray-200">availa-ai.com.br/login</span> e configura o negócio dele.
           </p>
-          <div className="bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg p-4 space-y-2 text-sm">
+          <div className="bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-white/10 rounded-lg p-4 space-y-2 text-sm">
             <div className="flex justify-between gap-4">
               <span className="text-gray-500">E-mail</span>
               <span className="text-gray-900 dark:text-white break-all">{done.email}</span>
@@ -128,7 +128,7 @@ export default function NovoClientePage() {
             <button
               type="button"
               onClick={() => set('password', randomPassword())}
-              className="px-3 text-xs text-gray-600 dark:text-gray-400 border border-gray-300 dark:border-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
+              className="px-3 text-xs text-gray-600 dark:text-gray-400 border border-gray-300 dark:border-white/10 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
             >
               Gerar
             </button>
@@ -200,7 +200,7 @@ function Field({
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
         required={required}
-        className="w-full bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg px-3 py-2.5 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition"
+        className="w-full bg-white dark:bg-white/[0.04] border border-gray-300 dark:border-white/10 rounded-lg px-3 py-2.5 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition"
       />
     </div>
   )

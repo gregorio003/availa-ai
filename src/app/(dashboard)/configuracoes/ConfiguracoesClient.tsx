@@ -41,7 +41,7 @@ function GoogleCalendarSection() {
       ) : (
         <a
           href="/api/auth/google"
-          className="inline-flex items-center gap-2 px-4 py-2.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 transition shadow-sm"
+          className="inline-flex items-center gap-2 px-4 py-2.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-white/10 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 transition shadow-sm"
         >
           Conectar Google Agenda
           <ExternalLink className="w-3.5 h-3.5 text-gray-400" />
@@ -52,7 +52,7 @@ function GoogleCalendarSection() {
 }
 
 const inputCls =
-  'w-full px-3 py-2 bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-700 rounded-lg text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-green-500'
+  'w-full px-3 py-2 bg-white dark:bg-black/20 border border-gray-200 dark:border-white/10 rounded-lg text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-green-500'
 
 export function ConfiguracoesClient({ business, botMessages }: { business: Business; botMessages: BotMessages | null }) {
   const [saving, setSaving] = useState(false)
@@ -152,7 +152,7 @@ export function ConfiguracoesClient({ business, botMessages }: { business: Busin
                     value={day?.start ?? ''}
                     disabled={closed}
                     onChange={(e) => setDay(d.key, { start: e.target.value })}
-                    className="px-2 py-1.5 bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-700 rounded text-sm text-gray-900 dark:text-white disabled:opacity-40 focus:outline-none focus:ring-2 focus:ring-green-500"
+                    className="px-2 py-1.5 bg-white dark:bg-black/20 border border-gray-200 dark:border-white/10 rounded text-sm text-gray-900 dark:text-white disabled:opacity-40 focus:outline-none focus:ring-2 focus:ring-green-500"
                   />
                   <span className="text-gray-400 text-sm">até</span>
                   <input
@@ -160,7 +160,7 @@ export function ConfiguracoesClient({ business, botMessages }: { business: Busin
                     value={day?.end ?? ''}
                     disabled={closed}
                     onChange={(e) => setDay(d.key, { end: e.target.value })}
-                    className="px-2 py-1.5 bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-700 rounded text-sm text-gray-900 dark:text-white disabled:opacity-40 focus:outline-none focus:ring-2 focus:ring-green-500"
+                    className="px-2 py-1.5 bg-white dark:bg-black/20 border border-gray-200 dark:border-white/10 rounded text-sm text-gray-900 dark:text-white disabled:opacity-40 focus:outline-none focus:ring-2 focus:ring-green-500"
                   />
                   <button
                     onClick={() => setDay(d.key, closed ? {} : null)}
@@ -222,7 +222,7 @@ export function ConfiguracoesClient({ business, botMessages }: { business: Busin
 
 function Section({ title, icon, children }: { title: string; icon?: React.ReactNode; children: React.ReactNode }) {
   return (
-    <section className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-6 shadow-sm">
+    <section className="bg-white dark:bg-white/[0.04] rounded-xl border border-gray-200 dark:border-white/10 p-6 shadow-sm">
       <div className="flex items-center gap-2 mb-4">
         {icon}
         <h2 className="text-lg font-semibold text-gray-900 dark:text-white">{title}</h2>

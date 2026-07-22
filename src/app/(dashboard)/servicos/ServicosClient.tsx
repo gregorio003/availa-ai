@@ -85,13 +85,13 @@ export function ServicosClient({ initialServices }: { initialServices: Service[]
         {services.map((s) => (
           <div
             key={s.id}
-            className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-4 flex items-center gap-3 shadow-sm"
+            className="bg-white dark:bg-white/[0.04] border border-gray-200 dark:border-white/10 rounded-xl p-4 flex items-center gap-3 shadow-sm"
           >
             <input
               value={s.name}
               onChange={(e) => update(s.id, { name: e.target.value })}
               placeholder="Nome do serviço"
-              className="flex-1 px-3 py-2 bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-700 rounded-lg text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-green-500"
+              className="flex-1 px-3 py-2 bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-white/10 rounded-lg text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-green-500"
             />
             <div className="flex items-center gap-1">
               <Clock className="w-4 h-4 text-gray-400" />
@@ -100,7 +100,7 @@ export function ServicosClient({ initialServices }: { initialServices: Service[]
                 min={5}
                 value={s.duration_minutes}
                 onChange={(e) => update(s.id, { duration_minutes: Number(e.target.value) })}
-                className="w-16 px-2 py-2 bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-700 rounded-lg text-sm text-center text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-green-500"
+                className="w-16 px-2 py-2 bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-white/10 rounded-lg text-sm text-center text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-green-500"
               />
               <span className="text-xs text-gray-500">min</span>
             </div>
@@ -112,7 +112,7 @@ export function ServicosClient({ initialServices }: { initialServices: Service[]
                 step={0.01}
                 value={s.price ?? 0}
                 onChange={(e) => update(s.id, { price: Number(e.target.value) })}
-                className="w-20 px-2 py-2 bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-700 rounded-lg text-sm text-center text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-green-500"
+                className="w-20 px-2 py-2 bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-white/10 rounded-lg text-sm text-center text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-green-500"
               />
             </div>
             <button
@@ -134,7 +134,7 @@ export function ServicosClient({ initialServices }: { initialServices: Service[]
         ))}
 
         {services.length === 0 && (
-          <div className="text-center py-16 text-gray-500 border border-dashed border-gray-300 dark:border-gray-800 rounded-xl">
+          <div className="text-center py-16 text-gray-500 border border-dashed border-gray-300 dark:border-white/10 rounded-xl">
             <Wrench className="w-8 h-8 mx-auto mb-2 text-gray-300 dark:text-gray-700" />
             <p>Nenhum serviço cadastrado.</p>
             <button onClick={addService} className="text-green-600 dark:text-green-400 hover:text-green-500 text-sm mt-2">

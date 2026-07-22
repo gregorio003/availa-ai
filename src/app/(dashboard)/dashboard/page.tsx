@@ -63,7 +63,7 @@ export default async function DashboardPage() {
           <Link
             key={s.label}
             href={s.href}
-            className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-5 shadow-sm hover:border-green-400 dark:hover:border-green-700 transition"
+            className="bg-white dark:bg-white/[0.04] border border-gray-200 dark:border-white/10 rounded-xl p-5 shadow-sm hover:border-green-400 dark:hover:border-green-700 transition"
           >
             <div className="flex items-center justify-between mb-3">
               <div className="w-9 h-9 bg-green-100 dark:bg-green-900/40 rounded-lg flex items-center justify-center">

@@ -14,7 +14,7 @@ const niches = [
 ]
 
 const inputCls =
-  'w-full bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg px-3 py-2.5 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition'
+  'w-full bg-white dark:bg-white/[0.04] border border-gray-300 dark:border-white/10 rounded-lg px-3 py-2.5 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition'
 const labelCls = 'block text-sm text-gray-600 dark:text-gray-400 mb-1'
 
 export function ClientEditor({
@@ -136,7 +136,7 @@ export function ClientEditor({
         </div>
         <button
           onClick={resetPassword}
-          className="mt-3 flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-700 rounded-lg px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-800 transition"
+          className="mt-3 flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-white/10 rounded-lg px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-800 transition"
         >
           <KeyRound className="w-4 h-4" /> Resetar senha
         </button>
@@ -234,7 +234,7 @@ export function ClientEditor({
       {error && <p className="text-red-500 text-sm mb-3">{error}</p>}
       {msg && <p className="text-green-600 dark:text-green-400 text-sm mb-3">{msg}</p>}
 
-      <div className="flex items-center justify-between border-t border-gray-200 dark:border-gray-800 pt-5">
+      <div className="flex items-center justify-between border-t border-gray-200 dark:border-white/10 pt-5">
         <button
           onClick={remove}
           className="flex items-center gap-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/40 px-3 py-2 rounded-lg transition"
@@ -255,7 +255,7 @@ export function ClientEditor({
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-5 mb-4 shadow-sm">
+    <div className="bg-white dark:bg-white/[0.04] border border-gray-200 dark:border-white/10 rounded-xl p-5 mb-4 shadow-sm">
       <h2 className="text-sm font-semibold text-gray-900 dark:text-white mb-4">{title}</h2>
       {children}
     </div>

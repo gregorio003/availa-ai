@@ -39,25 +39,25 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 to-white flex items-center justify-center p-4">
+    <div className="min-h-screen flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         {/* Logo */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center gap-2 mb-4">
-            <div className="w-10 h-10 bg-green-500 rounded-xl flex items-center justify-center">
-              <Zap className="w-6 h-6 text-white" />
+          <div className="inline-flex items-center gap-2.5 mb-4">
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center glow" style={{ background: 'linear-gradient(135deg,#34d399,#059669)' }}>
+              <Zap className="w-6 h-6 text-[#04140c]" />
             </div>
-            <span className="text-2xl font-bold text-gray-900">Availa.ai</span>
+            <span className="text-2xl font-semibold text-white">Availa<span className="text-emerald-400">.ai</span></span>
           </div>
-          <h1 className="text-xl font-semibold text-gray-800">Entrar na sua conta</h1>
-          <p className="text-gray-500 text-sm mt-1">Gerencie seus agendamentos via WhatsApp</p>
+          <h1 className="text-xl font-semibold text-white">Entrar na sua conta</h1>
+          <p className="text-gray-400 text-sm mt-1">Gerencie seus agendamentos via WhatsApp</p>
         </div>
 
         {/* Form */}
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
+        <div className="glass rounded-2xl p-8">
           <form onSubmit={handleLogin} className="space-y-5">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">
+              <label className="block text-sm font-medium text-gray-300 mb-1.5">
                 E-mail
               </label>
               <input
@@ -66,12 +66,12 @@ export default function LoginPage() {
                 onChange={e => setEmail(e.target.value)}
                 placeholder="seu@email.com"
                 required
-                className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition"
+                className="w-full px-4 py-2.5 bg-white/[0.03] border border-white/10 rounded-lg text-sm text-white placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">
+              <label className="block text-sm font-medium text-gray-300 mb-1.5">
                 Senha
               </label>
               <div className="relative">
@@ -81,12 +81,12 @@ export default function LoginPage() {
                   onChange={e => setPassword(e.target.value)}
                   placeholder="••••••••"
                   required
-                  className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition pr-10"
+                  className="w-full px-4 py-2.5 bg-white/[0.03] border border-white/10 rounded-lg text-sm text-white placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition pr-10"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-300"
                 >
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
@@ -94,7 +94,7 @@ export default function LoginPage() {
             </div>
 
             {error && (
-              <div className="bg-red-50 border border-red-200 text-red-700 text-sm px-4 py-3 rounded-lg">
+              <div className="bg-red-500/10 border border-red-500/30 text-red-300 text-sm px-4 py-3 rounded-lg">
                 {error}
               </div>
             )}
@@ -102,7 +102,8 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-green-600 hover:bg-green-700 disabled:bg-green-400 text-white font-semibold py-2.5 rounded-lg transition flex items-center justify-center gap-2"
+              className="w-full text-[#04140c] font-semibold py-2.5 rounded-lg transition flex items-center justify-center gap-2 glow disabled:opacity-60"
+              style={{ background: 'linear-gradient(135deg,#34d399,#22c55e)' }}
             >
               {loading ? (
                 <>

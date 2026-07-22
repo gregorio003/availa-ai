@@ -50,7 +50,7 @@ export default async function AdminPage() {
           <Link
             key={b.id}
             href={`/admin/${b.id}`}
-            className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-5 flex items-center justify-between gap-4 shadow-sm hover:border-green-400 dark:hover:border-green-700 transition cursor-pointer"
+            className="bg-white dark:bg-white/[0.04] border border-gray-200 dark:border-white/10 rounded-xl p-5 flex items-center justify-between gap-4 shadow-sm hover:border-green-400 dark:hover:border-green-700 transition cursor-pointer"
           >
             <div className="min-w-0">
               <p className="text-gray-900 dark:text-white font-semibold truncate">{b.name}</p>
@@ -87,7 +87,7 @@ export default async function AdminPage() {
         ))}
 
         {list.length === 0 && (
-          <div className="text-center py-16 text-gray-500 border border-dashed border-gray-300 dark:border-gray-800 rounded-xl">
+          <div className="text-center py-16 text-gray-500 border border-dashed border-gray-300 dark:border-white/10 rounded-xl">
             <p>Nenhum cliente cadastrado ainda.</p>
             <Link href="/admin/novo" className="text-green-600 dark:text-green-400 hover:text-green-500 text-sm mt-2 inline-block">
               Cadastrar primeiro cliente →

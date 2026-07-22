@@ -34,16 +34,11 @@ export default function RootLayout({
   return (
     <html
       lang="pt-BR"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`dark ${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <head>
-        <meta name="theme-color" content="#16a34a" />
+        <meta name="theme-color" content="#080b0a" />
         <link rel="apple-touch-icon" href="/icon.svg" />
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `try{if(localStorage.getItem('theme')==='dark'){document.documentElement.classList.add('dark')}}catch(e){}`,
-          }}
-        />
       </head>
       <body className="min-h-full flex flex-col">{children}</body>
     </html>

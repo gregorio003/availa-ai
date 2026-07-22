@@ -3,7 +3,6 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { cn } from '@/lib/utils/cn'
-import { ThemeToggle } from '@/components/ThemeToggle'
 import {
   LayoutDashboard,
   Calendar,
@@ -28,14 +27,14 @@ export function Sidebar({ businessName, email }: { businessName: string; email: 
   const pathname = usePathname()
 
   return (
-    <aside className="w-64 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 flex flex-col shrink-0">
+    <aside className="w-64 glass border-r border-white/10 flex flex-col shrink-0 rounded-none">
       {/* Logo */}
-      <div className="p-6 border-b border-gray-100 dark:border-gray-800">
+      <div className="p-6 border-b border-white/10">
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 bg-green-500 rounded-lg flex items-center justify-center">
-            <Zap className="w-5 h-5 text-white" />
+          <div className="w-8 h-8 rounded-lg flex items-center justify-center glow" style={{ background: 'linear-gradient(135deg,#34d399,#059669)' }}>
+            <Zap className="w-5 h-5 text-[#04140c]" />
           </div>
-          <span className="text-xl font-bold text-gray-900 dark:text-white">Availa.ai</span>
+          <span className="text-xl font-semibold text-white">Availa<span className="text-emerald-400">.ai</span></span>
         </div>
         <p className="text-xs text-gray-500 mt-1">Agendamentos inteligentes</p>
       </div>
@@ -73,7 +72,6 @@ export function Sidebar({ businessName, email }: { businessName: string; email: 
             <p className="text-xs text-gray-500 truncate">{email}</p>
           </div>
         </div>
-        <ThemeToggle />
         <form action="/api/auth/signout" method="POST">
           <button className="flex items-center gap-2 px-3 py-2 w-full rounded-lg text-sm text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-white transition">
             <LogOut className="w-4 h-4" />
